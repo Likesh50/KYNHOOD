@@ -404,6 +404,7 @@ const RegistrationForm = () => {
         sessionStorage.setItem('userId',data.userId);
         sessionStorage.setItem('preference',data.preference);
         sessionStorage.setItem('languages',data.languages);
+        sessionStorage.setItem('district',data.district);
         navigate("/phome");
         // Handle success (e.g., redirect to dashboard or show success message)
       } else {

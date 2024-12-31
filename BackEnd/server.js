@@ -176,7 +176,7 @@ app.post('/login', (req, res) => {
 
       // If passwords match, send a success response
       if (isMatch) {
-        res.status(200).json({ message: 'Login successful', userId: user.id,preference:user.preferred_categories,languages:user.language_preference});
+        res.status(200).json({ message: 'Login successful', userId: user.id,preference:user.preferred_categories,languages:user.language_preference,district:user.district});
       } else {
         res.status(400).json({ message: 'Invalid email or password' });
       }
@@ -197,6 +197,7 @@ const getImageUrl = async (url) => {
 app.get('/scrape3', async (req, res) => {
   try {
     console.log("testing 123");
+    
     const searchQuery = req.query.q; // Get the search query from the request
     if (!searchQuery) {
       return res.status(400).send('Search query is required.');
@@ -240,7 +241,7 @@ app.get('/scrape3', async (req, res) => {
 
     // Resolve image URLs
     const articlesWithImages = await Promise.all(
-      elements.slice(0, 5).map(async (article) => ({
+      elements.slice(0, 10).map(async (article) => ({
         ...article,
         imgSrc: article.imgSrc ? await getImageUrl(article.imgSrc) : null,
       }))
