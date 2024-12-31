@@ -75,7 +75,7 @@ const PersonalizedPage = () => {
 
   return (
     <>
-    <NavBar />
+      <NavBar />
       <Box
         sx={{
           display: "flex",
@@ -91,8 +91,8 @@ const PersonalizedPage = () => {
         <Box
           sx={{
             width: { xs: "100%", sm: 250 },
-            backgroundColor: "#2c3e50",
-            color: "#ecf0f1",
+            backgroundColor: "#fff",
+            color: "#6f42c1",
             display: "flex",
             flexDirection: "column",
             padding: "16px",
@@ -124,11 +124,31 @@ const PersonalizedPage = () => {
             overflowY: "auto",
           }}
         >
-          <AppBar position="static" sx={{ backgroundColor: "#34495e" }}>
-            <Toolbar>
-              <Typography variant="h6">Personalized News</Typography>
-            </Toolbar>
-          </AppBar>
+          <Box
+            sx={{
+              marginBottom: 4,
+              backgroundColor: "#fff", // A light background color to make it stand out
+              padding: "12px", // Padding for better spacing around content
+              borderRadius: 2, // Rounded corners for a modern look
+              boxShadow: 2, // Subtle shadow to lift the content
+              display: "flex", // Flexbox to align items properly
+              alignItems: "center", // Vertically center the title
+              justifyContent: "space-between", // Space between the title and any potential actions (e.g., settings)
+            }}
+          >
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{
+                color: "#6f42c1", // Purple color for the title
+                fontWeight: "bold", // Bold font weight for emphasis
+                letterSpacing: 1, // Slightly increase letter spacing for better readability
+                 // Capitalize first letter of each word
+              }}
+            >
+              Personalized News for you
+            </Typography>
+          </Box>
 
           {loading ? (
             <Box
@@ -182,8 +202,9 @@ const PersonalizedPage = () => {
                             rel="noopener noreferrer"
                             style={{
                               textDecoration: "none",
-                              color: "#2980b9",
+                              color: "#6f42c1",
                               fontWeight: "bold",
+                              fontSize: "16px",
                             }}
                           >
                             Read More
@@ -209,7 +230,12 @@ const PersonalizedPage = () => {
             overflowY: "auto",
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{ marginBottom: 2 }}
+            align="center"
+            style={{ color: "#6f42c1" }}
+          >
             Local News
           </Typography>
           <Divider />
