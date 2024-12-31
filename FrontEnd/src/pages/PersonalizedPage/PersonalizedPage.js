@@ -69,6 +69,7 @@ function PersonalizedPage() {
 
   return (
     <>
+    
       <div
         className="mt-500"
         style={{
