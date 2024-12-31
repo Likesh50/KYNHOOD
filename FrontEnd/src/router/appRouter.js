@@ -4,6 +4,7 @@ import App from '../App';
 import HomePage from '../pages/HomePage/HomePage';
 import PersonalizedPage from '../pages/PersonalizedPage/PersonalizedPage';
 import { NotRouteFound } from '../components';
+import RegistrationForm from '../pages/Login/RegistrationForm';
 
 const appRouter = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const appRouter = createBrowserRouter([
 			{
 				path: "*",
 				element: <NotRouteFound />
+			},
+			{
+				path: "/login",
+				element: <RegistrationForm/>
 			}
 		]
 	}

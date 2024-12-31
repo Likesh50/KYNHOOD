@@ -6,6 +6,7 @@ const { google } = require('googleapis');
 const axios = require('axios');
 const app = express();
 const PORT = 5000;
+const bcrypt = require('bcryptjs');
 
 // Middleware
 app.use(cors());
@@ -110,6 +111,76 @@ app.post('/api/getVideoSummary', async (req, res) => {
 
   // Send the summarized result
   res.send({ summary });
+});
+
+app.post('/register', (req, res) => {
+  const { name, email, password, mobile, preferredCategories, languagePreference, dateOfBirth, district } = req.body;
+
+  // Hash the password using bcrypt
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error hashing password' });
+    }
+
+    // Prepare data to be inserted into the database
+    const query = `
+      INSERT INTO users (name, email, password, mobile, preferred_categories, language_preference, date_of_birth, district)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    // Convert the preferredCategories array into a JSON string for storing
+    const categoriesJson = JSON.stringify(preferredCategories);
+
+    // Execute the query to insert data into the users table
+    db.query(query, [name, email, hashedPassword, mobile, categoriesJson, languagePreference, dateOfBirth, district], (err, result) => {
+      if (err) {
+        console.error('Error inserting data:', err);
+        return res.status(500).json({ message: 'Error registering user' });
+      }
+
+      // Respond with success message
+      res.status(201).json({ message: 'User registered successfully' });
+    });
+  });
+});
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate if both email and password are provided
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  // Query to find the user by email
+  const query = 'SELECT * FROM users WHERE email = ?';
+
+  db.query(query, [email], (err, results) => {
+    if (err) {
+      console.error('Error querying database:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    // Check if the user with the given email exists
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const user = results[0];
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error('Error comparing passwords:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      // If passwords match, send a success response
+      if (isMatch) {
+        res.status(200).json({ message: 'Login successful', userId: user.id });
+      } else {
+        res.status(400).json({ message: 'Invalid email or password' });
+      }
+    });
+  });
 });
 
 // Start the server
