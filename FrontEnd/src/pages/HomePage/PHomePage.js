@@ -2,7 +2,7 @@ import React from "react";
 import { News } from "../../components";
 import { Box, Typography } from "@mui/material";
 
-function PHomePage() {
+function HomePage() {
   return (
     <Box
       sx={{
@@ -26,4 +26,4 @@ function PHomePage() {
   );
 }
 
-export default PHomePage;
+export default HomePage;

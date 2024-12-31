@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Container } from "@mui/system";
 import {
@@ -6,14 +6,59 @@ import {
   Typography,
   Card,
   CardContent,
-  CardMedia,
   Button,
   List,
   ListItem,
   ListItemText,
   CircularProgress,
+  Slider,
 } from "@mui/material";
 import "./News.css";
+
+// Pixelation Component
+const PixelatedImage = ({ imageUrl, pixelationLevel }) => {
+  const canvasRef = useRef(null);
+  const defaultImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpTn-gQXtrxGboqKJJdn24Pt_r0viSEJW32Q&s"; // URL of the default image
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let img = new Image();
+
+    const loadImage = (url) => {
+      img.crossOrigin = "anonymous"; // Allow cross-origin images
+      img.src = url;
+
+      img.onload = () => {
+        const width = img.width / pixelationLevel;
+        const height = img.height / pixelationLevel;
+
+        // Set canvas size
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Draw pixelated image
+        ctx.drawImage(img, 0, 0, width, height);
+        ctx.drawImage(canvas, 0, 0, width, height, 0, 0, img.width, img.height);
+      };
+
+      img.onerror = () => {
+        if (url !== defaultImageUrl) {
+          // Retry with default image
+          loadImage(defaultImageUrl);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillText("Failed to load default image", 10, 50);
+        }
+      };
+    };
+
+    loadImage(imageUrl);
+  }, [imageUrl, pixelationLevel]);
+
+  return <canvas ref={canvasRef} style={{ width: "100%", borderRadius: "10px" }} />;
+};
+
 
 function News({ personalized, handleShowSidebar }) {
   const { articles, status, filters } = useSelector((state) => state.articles);
@@ -39,6 +84,9 @@ function News({ personalized, handleShowSidebar }) {
       setCurrentPage(currentPage - 1);
     }
   };
+
+  // State for pixelation level
+  const [pixelationLevel, setPixelationLevel] = useState(1);
 
   return (
     <Container
@@ -82,11 +130,9 @@ function News({ personalized, handleShowSidebar }) {
                   boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
                 }}
               >
-                <CardMedia
-                  component="img"
-                  height="300"
-                  image={article.imgSrc}
-                  alt={article.title}
+                <PixelatedImage
+                  imageUrl={article.imgSrc}
+                  pixelationLevel={pixelationLevel}
                 />
                 <CardContent>
                   <Typography
@@ -108,7 +154,7 @@ function News({ personalized, handleShowSidebar }) {
                     color="text.secondary"
                     sx={{ display: "block", marginBottom: 1 }}
                   >
-                    Published by {article.source} on {article.publishedAt}
+                    Published by {article.source} | {article.publishedAt}
                   </Typography>
                   <Button
                     size="small"
@@ -161,6 +207,22 @@ function News({ personalized, handleShowSidebar }) {
                 Next
               </Button>
             </Box>
+
+            {/* Pixelation Slider
+            <Box sx={{ marginTop: 3, textAlign: "center" }}>
+              <Typography variant="body2" gutterBottom>
+                Adjust Pixelation Level
+              </Typography>
+              <Slider
+                value={pixelationLevel}
+                onChange={(e, newValue) => setPixelationLevel(newValue)}
+                min={1}
+                max={50}
+                step={1}
+                valueLabelDisplay="auto"
+                sx={{ width: "80%", margin: "auto" }}
+              />
+            </Box> */}
           </>
         )}
       </Box>
