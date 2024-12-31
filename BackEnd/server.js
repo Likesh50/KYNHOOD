@@ -8,6 +8,7 @@ const app = express();
 const PORT = 5000;
 const bcrypt = require('bcryptjs');
 const puppeteer = require('puppeteer');
+const nodemailer = require('nodemailer');
 
 // Middleware
 app.use(cors());
@@ -278,6 +279,39 @@ app.get('/resolve-image-url', async (req, res) => {
   } catch (error) {
     console.error('Error resolving image URL:', error);
     res.status(500).send('Error resolving image URL');
+  }
+});
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // Replace with your email service (e.g., 'smtp.mailtrap.io')
+  auth: {
+    user: 'like22050.it@rmkec.ac.in', // Replace with your email address
+    pass: 'ffezcjwvtnmihwow', // Replace with your email password or app-specific password
+  },
+});
+
+// Email sending endpoint
+app.post('/send-email', async (req, res) => {
+  const { to, subject, text } = req.body;
+
+  if (!to || !subject || !text) {
+    return res.status(400).json({ error: 'Please provide all required fields: to, subject, text.' });
+  }
+
+  try {
+    const mailOptions = {
+      from: 'like22050.it@rmkec.ac.in', // Sender email address
+      to, // Recipient email address
+      subject, // Email subject
+      text, // Email content
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Email sent successfully', info });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to send email', details: error.message });
   }
 });
 

@@ -1,9 +1,11 @@
 import React from "react";
-import { News } from "../../components";
+import { NavBar, News } from "../../components";
 import { Box, Typography } from "@mui/material";
 
 function HomePage() {
   return (
+	<>
+	<NavBar/>
     <Box
       sx={{
         backgroundColor: "#f9f9ff",
@@ -23,6 +25,7 @@ function HomePage() {
         <News />
       </Box>
     </Box>
+	</>
   );
 }
 

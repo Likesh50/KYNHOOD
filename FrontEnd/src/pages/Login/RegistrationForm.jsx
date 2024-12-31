@@ -115,8 +115,7 @@ const Input = styled.input`
 `;
 
 const ButtonGroup = styled.div`
-  display: flex;
-  justify-content: space-between;
+  text-align:center;
   margin-top: 30px;
 
   @media (max-width: 768px) {
@@ -308,7 +307,7 @@ const TamilNaduDistricts = [
 const RegistrationForm = () => {
   const [isRegistration, setIsRegistration] = useState(true);
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -356,7 +355,10 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    
     try {
+      // Step 1: Register the user
       const response = await fetch("http://localhost:5000/register", {
         method: "POST",
         headers: {
@@ -364,9 +366,31 @@ const RegistrationForm = () => {
         },
         body: JSON.stringify({ ...formData, district: selectedDistrict }),
       });
-
+  
       if (response.ok) {
         alert("Registration successful!");
+  
+        // Step 2: Send a confirmation email
+        const emailResponse = await fetch("http://localhost:5000/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to: formData.email, // User's email address
+            subject: "கணினி_X's InfoScrap User Registration",
+            text: "Congratulations! Your account has been successfully registered with InfoScrap. We are excited to bring you personalized and local news tailored to your preferences. Stay informed and connected with the stories that matter most to you. Welcome to the InfoScrap community! ",
+          }),
+        });
+  
+        if (emailResponse.ok) {
+          alert("A confirmation email has been sent.");
+        } else {
+          console.error("Failed to send email.");
+          alert("Registration successful, but the confirmation email could not be sent.");
+        }
+  
+        // Reset form fields
         setFormData({
           name: "",
           email: "",
@@ -377,6 +401,7 @@ const RegistrationForm = () => {
           dateOfBirth: "",
         });
         setSelectedDistrict("");
+        navigate("/home"); 
       } else {
         alert("Failed to register. Please try again.");
       }
@@ -385,6 +410,7 @@ const RegistrationForm = () => {
       alert("An error occurred. Please try again later.");
     }
   };
+  
 
   const handleLogin = async (event) => {
     event.preventDefault(); // Prevent default form submission
@@ -423,19 +449,14 @@ const RegistrationForm = () => {
         <Avatar>
           <AvatarImage src={avatar} alt="User Avatar" />
         </Avatar>
-        <Text>Get Started with Our Services</Text>
-        <SubText>Complete your profile and choose your preferences.</SubText>
+        <Text>Get Started with INFOSCRAP</Text>
+        <SubText>Complete your profile and choose your preferences to get personalised updates.</SubText>
       </LeftPane>
       <RightPane>
         <ScrollableFormContainer>
           <ButtonGroup>
-            {!isRegistration && (
-              <Button type="button" onClick={() => setIsRegistration(true)}>
-                Registration
-              </Button>
-            )}
             {isRegistration && (
-              <Button type="button" onClick={() => setIsRegistration(false)}>
+              <Button type="button" onClick={() => setIsRegistration(false)} style={{backgroundColor:"green",width:"150px"}}>
                 Sign In
               </Button>
             )}
@@ -458,7 +479,7 @@ const RegistrationForm = () => {
                   <Input
                     type="email"
                     name="email"
-                    placeholder="Enter your email"
+                    placeholder="Enter your email (Enter valid email to get mail updates)"
                     value={formData.email}
                     onChange={handleInputChange}
                   />
@@ -476,7 +497,7 @@ const RegistrationForm = () => {
                 <FormGroup>
                   <Label>Mobile Number (Optional)</Label>
                   <Input
-                    type="tel"
+                    type="number"
                     name="mobile"
                     placeholder="Enter your mobile number"
                     value={formData.mobile}
@@ -485,7 +506,7 @@ const RegistrationForm = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>Preferred Categories</Label>
-                  {["Politics", "Sports", "Technology", "Entertainment"].map(
+                  {["Politics", "Sports", "Technology", "Entertainment","Business","Economy","Health","Medicine","Science"].map(
                     (category) => (
                       <CheckboxLabel key={category}>
                         <CheckboxInput
@@ -506,6 +527,7 @@ const RegistrationForm = () => {
                   <StyledSelect
                     value={selectedDistrict}
                     onChange={handleDistrictChange}
+                    style={{backgroundColor:"white",color:"black"}}
                   >
                     <option value="" disabled>
                       Select your district
@@ -523,6 +545,7 @@ const RegistrationForm = () => {
                     name="languagePreference"
                     value={formData.languagePreference}
                     onChange={handleInputChange}
+                    style={{backgroundColor:"white",color:"black"}}
                   >
                     <option value="english">English</option>
                     <option value="hindi">Hindi</option>
@@ -537,10 +560,11 @@ const RegistrationForm = () => {
                     name="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleInputChange}
+                    style={{backgroundColor:"white",color:"black"}}
                   />
                 </FormGroup>
                 <ButtonGroup>
-                  <Button type="submit" onClick={handleSubmit}>Register</Button>
+                  <Button type="submit" onClick={handleSubmit} style={{backgroundColor:"blue"}}>Register</Button>
                 </ButtonGroup>
               </>
             ) : (
@@ -567,7 +591,7 @@ const RegistrationForm = () => {
                   />
                 </FormGroup>
                 <ButtonGroup>
-                  <Button type="button" onClick={() => setIsRegistration(true)}>
+                  <Button type="button" onClick={() => setIsRegistration(true)} style={{backgroundColor:"green"}}>
                     Back to Registration
                   </Button>
                   <Button type="submit" onClick={handleLogin}>Sign In</Button>

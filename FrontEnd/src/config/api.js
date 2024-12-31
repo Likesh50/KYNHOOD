@@ -103,7 +103,6 @@ export const fetchGnewsArticles = async (query, filters) => {
     from: filters.date,
     category: filters.category || 'general',
     apikey: GNEWS_APY_KEY,
-    
   };
 
   const data = await makeApiRequest(url, params);
