@@ -1,6 +1,7 @@
 import React,{useState} from "react";
 import styled from "styled-components";
 import avatar from '../../images/avatar.jpg';
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   display: flex;
@@ -307,6 +308,7 @@ const TamilNaduDistricts = [
 const RegistrationForm = () => {
   const [isRegistration, setIsRegistration] = useState(true);
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const navigate=useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -399,6 +401,10 @@ const RegistrationForm = () => {
       const data = await response.json();
       if (response.ok) {
         console.log('Login successful:', data);
+        sessionStorage.setItem('userId',data.userId);
+        sessionStorage.setItem('preference',data.preference);
+        sessionStorage.setItem('languages',data.languages);
+        navigate("/phome");
         // Handle success (e.g., redirect to dashboard or show success message)
       } else {
         console.error('Login failed:', data.message);

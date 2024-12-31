@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '1207',
+  password: 'pass123',
   database: 'kynhood',
 });
 
@@ -175,7 +175,7 @@ app.post('/login', (req, res) => {
 
       // If passwords match, send a success response
       if (isMatch) {
-        res.status(200).json({ message: 'Login successful', userId: user.id });
+        res.status(200).json({ message: 'Login successful', userId: user.id,preference:user.preferred_categories,languages:user.language_preference});
       } else {
         res.status(400).json({ message: 'Invalid email or password' });
       }
