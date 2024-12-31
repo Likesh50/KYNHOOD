@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { getAIResponse } from "../api/openai"; // Adjust the import path as needed
 import { useSelector } from "react-redux";
 import { Container } from "@mui/system";
 import {
@@ -12,188 +11,68 @@ import {
   List,
   ListItem,
   ListItemText,
-  TextField,
   CircularProgress,
 } from "@mui/material";
-import InfiniteScroll from "react-infinite-scroll-component";
-import Loading from "../Loading/Loading";
-import NoDataFound from "../NoDataFound/NoDataFound";
 import "./News.css";
-
 
 function News({ personalized, handleShowSidebar }) {
   const { articles, status, filters } = useSelector((state) => state.articles);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-  // AI section state
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [aiResponse, setAiResponse] = useState("");
-  const [loadingAi, setLoadingAi] = useState(false);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const articlesPerPage = 10;
+
+  const totalPages = Math.ceil(articles.length / articlesPerPage);
+  const paginatedArticles = articles.slice(
+    (currentPage - 1) * articlesPerPage,
+    currentPage * articlesPerPage
+  );
 
   const heading = personalized
     ? "Personalized News"
     : filters.query || filters.category || "Top News";
 
-  const toggleDrawer = (open) => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-    setDrawerOpen(open);
-  };
-
-  const handleAiSubmit = async () => {
-    if (!aiPrompt) return;
-    setLoadingAi(true);
-    try {
-      const response = await getAIResponse(aiPrompt); // This should work now
-      setAiResponse(response);
-    } catch (error) {
-      console.error("Error generating AI response:", error);
-      setAiResponse("Sorry, there was an error generating the news.");
-    } finally {
-      setLoadingAi(false);
+  const handlePageChange = (direction) => {
+    if (direction === "next" && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === "prev" && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
-  const renderSidebar = () => (
-    <Box
-      sx={{
-        width: "100%",
-        padding: 2,
-        background: "#f9f9ff",
-        borderRadius: "10px",
-        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-        margin: "10px 0",
-      }}
-      role="presentation"
-      onClick={toggleDrawer(false)}
-      onKeyDown={toggleDrawer(false)}
-    >
-      <Typography variant="h6" gutterBottom sx={{ color: "#6f42c1" }}>
-        Recommended Titles
-      </Typography>
-      <List>
-        {articles.slice(0, 10).map((article, index) => (
-          <ListItem
-            button
-            key={index}
-            sx={{
-              background: "#fff",
-              margin: "5px 0",
-              borderRadius: "5px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <ListItemText
-              primary={article.title}
-              primaryTypographyProps={{
-                style: { fontSize: "0.9rem", color: "#333" },
-              }}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
 
   return (
     <Container
       maxWidth="xl"
       sx={{
         display: "flex",
-        flexDirection: { xs: "column", md: "row" }, // Stack on mobile, row on larger screens
-        minHeight: "100vh", // Ensures full height of the page
+        flexDirection: { xs: "column", md: "row" },
+        minHeight: "100vh",
         padding: 0,
       }}
     >
-      {/* Left Sidebar - AI Section */}
-      <Box
-        sx={{
-          flex: { xs: "1", md: "1" },
-          padding: 2,
-          backgroundColor: "#f9f9ff",
-          borderRadius: "10px",
-          boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          marginBottom: { xs: "20px", md: "0" }, // Add space below on small screens
-        }}
-      >
-        <Typography variant="h6" sx={{ color: "#6f42c1", marginBottom: 2 }}>
-          AI Text Generator
-        </Typography>
-        <TextField
-          label="Enter Prompt"
-          variant="outlined"
-          fullWidth
-          value={aiPrompt}
-          onChange={(e) => setAiPrompt(e.target.value)}
-          sx={{ marginBottom: 2 }}
-        />
-        <Button
-          variant="contained"
-          onClick={handleAiSubmit}
-          sx={{
-            backgroundColor: "#6f42c1",
-            color: "#fff",
-            width: "100%",
-            padding: "10px",
-          }}
-          disabled={loadingAi || !aiPrompt}
-        >
-          {loadingAi ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Generate"
-          )}
-        </Button>
-        {aiResponse && (
-          <Box
-            sx={{
-              marginTop: 2,
-              padding: 2,
-              backgroundColor: "#fff",
-              borderRadius: "8px",
-            }}
-          >
-            <Typography variant="body2">{aiResponse}</Typography>
-          </Box>
-        )}
-      </Box>
-
       {/* Centered Article List */}
       <Box
         sx={{
-          flex: { xs: "1", md: "3" }, // Main content takes more space on larger screens
+          flex: { xs: "1", md: "3" },
           marginRight: { xs: 0, md: 2 },
         }}
       >
-        <Typography
-          variant="h5"
-          component="h5"
-          sx={{
-            margin: "20px 0",
-            textAlign: "center",
-            color: "#6f42c1",
-            textTransform: "capitalize",
-            fontWeight: "bold",
-          }}
-        >
-          TOP {heading} News
-        </Typography>
-
         {status === "loading" ? (
-          <Loading />
-        ) : articles.length === 0 ? (
-          <NoDataFound />
-        ) : (
-          <InfiniteScroll
-            dataLength={articles.length}
-            next={() => {}} // Add logic for fetching more articles here
-            hasMore={false} // Update to true if implementing infinite scroll
-            loader={<Loading />}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh",
+            }}
           >
-            {articles.map((article, index) => (
+            <CircularProgress size={60} thickness={5} />
+          </Box>
+        ) : paginatedArticles.length === 0 ? (
+          <p>No articles found.</p>
+        ) : (
+          <>
+            {paginatedArticles.map((article, index) => (
               <Card
                 key={index}
                 sx={{
@@ -243,7 +122,46 @@ function News({ personalized, handleShowSidebar }) {
                 </CardContent>
               </Card>
             ))}
-          </InfiniteScroll>
+
+            {/* Pagination Controls */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: 5,
+                marginBottom: 3,
+              }}
+            >
+              <Button
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange("prev")}
+                sx={{
+                  marginRight: 2,
+                  background: "#6f42c1",
+                  color: "#fff",
+                  "&:disabled": { background: "#ccc" },
+                }}
+              >
+                Previous
+              </Button>
+              <Typography variant="body2" style={{ color: "grey" }}>
+                Page {currentPage} of {totalPages}
+              </Typography>
+              <Button
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange("next")}
+                sx={{
+                  marginLeft: 2,
+                  background: "#6f42c1",
+                  color: "#fff",
+                  "&:disabled": { background: "#ccc" },
+                }}
+              >
+                Next
+              </Button>
+            </Box>
+          </>
         )}
       </Box>
 
