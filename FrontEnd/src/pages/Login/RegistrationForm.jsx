@@ -427,7 +427,10 @@ const RegistrationForm = () => {
       const data = await response.json();
       if (response.ok) {
         console.log('Login successful:', data);
-        const { preferences, location } = data.user;
+        sessionStorage.setItem('userId',data.userId);
+        sessionStorage.setItem('preference',data.preference);
+        sessionStorage.setItem('languages',data.languages);
+        navigate("/phome");
         // Handle success (e.g., redirect to dashboard or show success message)
       } else {
         console.error('Login failed:', data.message);
