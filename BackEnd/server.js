@@ -17,10 +17,13 @@ app.use(bodyParser.json());
 
 // MySQL Database Connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "pass123",
-  database: "kynhood",
+  host: 'srv1639.hstgr.io',
+  user: 'u347524458_developer',
+  password: 'Alamatn@24',
+  database: 'u347524458_alamatn',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 
