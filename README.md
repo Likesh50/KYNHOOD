@@ -2,14 +2,24 @@
 
 Seithi360 is a comprehensive news aggregator application designed to enhance community awareness by curating and sharing news from verified local sources. The platform delivers personalized news feeds based on user preferences and provides email updates with articles tailored to their interests.
 
+
 ---
+![image](https://github.com/user-attachments/assets/8825cd4f-a13b-4948-b323-06b9f43626bd)
+
 
 ## Features 📊
 
 - **Aggregate News**: News is sourced from verified APIs and through our custom web scraping technology.
+ ![image](https://github.com/user-attachments/assets/81e934c7-0ae4-4573-9f2b-b86fa46b89cb)
+
 - **Content Categorization**: Articles are categorized to enhance discoverability.
+  ![image](https://github.com/user-attachments/assets/cc535ad4-63bd-472f-a133-7f7c43c627b5)
+
 - **Personalized Feeds**: Users receive tailored news articles based on their preferences, district, and location.
+
 - **Email Updates**: Automatic email notifications with articles matching user interests.
+   ![WhatsApp Image 2025-01-01 at 09 27 40_ca0e3432](https://github.com/user-attachments/assets/4696020e-1ef0-4255-81a3-2e3c90593862)
+
 - **Multi-language Support**: News articles are delivered in the user’s preferred language.
 - **Accurate and Relevant**: Ensures information accuracy by sourcing from trusted sources and implementing content filtering.
 
