@@ -49,9 +49,7 @@ Ensure you have the following installed:
    npm install
    ```
 3. Start the backend server:
-   ```bash
-  node server.js
-   ```
+   ```bash node server.js  ```
 
 ### Frontend 🌐
 
