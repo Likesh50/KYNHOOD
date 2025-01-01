@@ -237,7 +237,7 @@ function News({ personalized, handleShowSidebar }) {
         }}
       >
         <Typography variant="h6" gutterBottom sx={{ color: "#6f42c1" }}>
-          Recommended Titles
+          Recommended Titles from செய்தி360
         </Typography>
         <List>
           {articles.slice(0, 10).map((article, index) => (

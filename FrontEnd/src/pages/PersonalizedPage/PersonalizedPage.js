@@ -17,6 +17,7 @@ import {
   Container,
 } from "@mui/material";
 import NavBar from "../../components/NavBar/NavBar";
+import Footer from "../../components/Footer/Footer";
 
 const PersonalizedPage = () => {
   const [articlesByPreference, setArticlesByPreference] = useState({});
@@ -257,7 +258,11 @@ const PersonalizedPage = () => {
             ))}
           </List>
         </Box>
-      </Box>
+        </Box>
+        
+        
+      
+
     </>
   );
 };

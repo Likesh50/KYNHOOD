@@ -132,8 +132,8 @@ const RegistrationForm = () => {
           },
           body: JSON.stringify({
             to: formData.email, // User's email address
-            subject: "கணினி_X's InfoScrap User Registration",
-            text: "Congratulations! Your account has been successfully registered with InfoScrap. We are excited to bring you personalized and local news tailored to your preferences. Stay informed and connected with the stories that matter most to you. Welcome to the InfoScrap community! ",
+            subject: "கணினி_X's செய்தி360 User Registration",
+            text: "Congratulations! Your account has been successfully registered with செய்தி360. We are excited to bring you personalized and local news tailored to your preferences. Stay informed and connected with the stories that matter most to you. Welcome to the செய்தி360 community! ",
           }),
         });
 
@@ -221,7 +221,7 @@ const RegistrationForm = () => {
         >
           <Avatar src={avatar} sx={{ width: 100, height: 100, mb: 2 }} />
           <Typography variant="h5" fontWeight="bold" color="#6a1b9a">
-            Welcome to InfoScrap
+            Welcome to செய்தி360
           </Typography>
           <Typography variant="body1" textAlign="center" color="#4a148c">
             Get personalized updates by registering with us.
