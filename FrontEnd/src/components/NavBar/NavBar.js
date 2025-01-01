@@ -101,7 +101,7 @@ function NavBar() {
           alt="Logo"
           className="logo"
         /> */}
-        <span>NewsApp</span>
+        <span>செய்தி360</span>
       </Navbar.Brand>
       {isCollapsed && (
         <Navbar.Toggle
