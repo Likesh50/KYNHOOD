@@ -112,7 +112,7 @@ const RegistrationForm = () => {
     event.preventDefault();
 
     try {
-      // Step 1: Register the user
+      
       const response = await fetch("http://localhost:5000/register", {
         method: "POST",
         headers: {
@@ -122,16 +122,16 @@ const RegistrationForm = () => {
       });
 
       if (response.ok) {
-        alert("Registration successful!");
+        alert("Registration successful! Log in Again!");
 
-        // Step 2: Send a confirmation email
+        
         const emailResponse = await fetch("http://localhost:5000/send-email", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            to: formData.email, // User's email address
+            to: formData.email, 
             subject: "கணினி_X's செய்தி360 User Registration",
             text: "Congratulations! Your account has been successfully registered with செய்தி360. We are excited to bring you personalized and local news tailored to your preferences. Stay informed and connected with the stories that matter most to you. Welcome to the செய்தி360 community! ",
           }),
@@ -142,11 +142,11 @@ const RegistrationForm = () => {
         } else {
           console.error("Failed to send email.");
           alert(
-            "Registration successful, but the confirmation email could not be sent."
+            "Registration successful, but the confirmation email could not be sent. Log in Again!"
           );
         }
 
-        // Reset form fields
+      
         setFormData({
           name: "",
           email: "",
@@ -157,7 +157,7 @@ const RegistrationForm = () => {
           dateOfBirth: "",
         });
         setSelectedDistrict("");
-        navigate("/home");
+        navigate("/login");
       } else {
         alert("Failed to register. Please try again.");
       }
@@ -168,7 +168,7 @@ const RegistrationForm = () => {
   };
 
   const handleLogin = async (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault(); 
 
     try {
       const response = await fetch("http://localhost:5000/login", {
@@ -186,8 +186,8 @@ const RegistrationForm = () => {
         sessionStorage.setItem("preference", data.preference);
         sessionStorage.setItem("languages", data.languages);
         sessionStorage.setItem("district", data.district);
-        navigate("/phome");
-        // Handle success (e.g., redirect to dashboard or show success message)
+        navigate("/home");
+        
       } else {
         console.error("Login failed:", data.message);
         alert("Login failed. Please try again.");

@@ -84,7 +84,7 @@ function NavBar() {
       })
     );
     dispatch(setQuery(""));
-    // eslint-disable-next-line
+   
   }, [dispatch, selected, selectedCategory]);
 
   return (

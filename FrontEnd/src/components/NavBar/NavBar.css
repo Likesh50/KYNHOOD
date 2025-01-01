@@ -1,4 +1,4 @@
-/* Navbar styling */
+
 .modern-navbar {
   background: linear-gradient(to right, #6f42c1, #9b59b6);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -86,7 +86,7 @@
   border-color: #6f42c1;
 }
 
-/* Navbar Toggle */
+
 .toggle-btn {
   background-color: #6f42c1;
   color: white;
@@ -102,7 +102,7 @@
   transform: rotate(90deg);
 }
 
-/* Responsive design */
+
 @media (max-width: 768px) {
   .navbar-nav {
     margin-top: 10px;

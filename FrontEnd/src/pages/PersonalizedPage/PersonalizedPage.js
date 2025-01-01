@@ -38,7 +38,6 @@ const PersonalizedPage = () => {
 
       const articlesGroup = {};
 
-      // Fetch articles for each preference separately
       for (const preference of preferences) {
         const response = await fetch(
           `http://localhost:5000/scrape3?q=${encodeURIComponent(preference)}`
@@ -51,7 +50,6 @@ const PersonalizedPage = () => {
       }
       setArticlesByPreference(articlesGroup);
 
-      // Fetch local news for district
       if (districts.length > 0) {
         const districtQuery = districts;
         const regionalResponse = await fetch(
@@ -88,8 +86,7 @@ const PersonalizedPage = () => {
       >
         <CssBaseline />
 
-        {/* Left Sidebar */}
-        <Box
+            <Box
           sx={{
             width: { xs: "100%", sm: 250 },
             backgroundColor: "#fff",
@@ -117,7 +114,6 @@ const PersonalizedPage = () => {
           </List>
         </Box>
 
-        {/* Main Content */}
         <Box
           sx={{
             flex: 1,
@@ -128,23 +124,23 @@ const PersonalizedPage = () => {
           <Box
             sx={{
               marginBottom: 4,
-              backgroundColor: "#fff", // A light background color to make it stand out
-              padding: "12px", // Padding for better spacing around content
-              borderRadius: 2, // Rounded corners for a modern look
-              boxShadow: 2, // Subtle shadow to lift the content
-              display: "flex", // Flexbox to align items properly
-              alignItems: "center", // Vertically center the title
-              justifyContent: "space-between", // Space between the title and any potential actions (e.g., settings)
+              backgroundColor: "#fff", 
+              padding: "12px", 
+              borderRadius: 2, 
+              boxShadow: 2, 
+              display: "flex",
+              alignItems: "center", 
+              justifyContent: "space-between", 
             }}
           >
             <Typography
               variant="h6"
               component="div"
               sx={{
-                color: "#6f42c1", // Purple color for the title
-                fontWeight: "bold", // Bold font weight for emphasis
-                letterSpacing: 1, // Slightly increase letter spacing for better readability
-                // Capitalize first letter of each word
+                color: "#6f42c1", 
+                fontWeight: "bold", 
+                letterSpacing: 1, 
+               
               }}
             >
               Personalized News for you
@@ -220,7 +216,6 @@ const PersonalizedPage = () => {
           )}
         </Box>
 
-        {/* Right Sidebar */}
         <Box
           sx={{
             width: { xs: "100%", sm: 250 },

@@ -17,7 +17,7 @@ import "./News.css";
 
 const PixelatedImage = ({ imageUrl, pixelationLevel }) => {
   const canvasRef = useRef(null);
-  const defaultImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpTn-gQXtrxGboqKJJdn24Pt_r0viSEJW32Q&s"; // URL of the default image
+  const defaultImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpTn-gQXtrxGboqKJJdn24Pt_r0viSEJW32Q&s"; 
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,25 +25,25 @@ const PixelatedImage = ({ imageUrl, pixelationLevel }) => {
     let img = new Image();
 
     const loadImage = (url) => {
-      img.crossOrigin = "anonymous"; // Allow cross-origin images
+      img.crossOrigin = "anonymous";
       img.src = url;
 
       img.onload = () => {
         const width = img.width / pixelationLevel;
         const height = img.height / pixelationLevel;
 
-        // Set canvas size
+   
         canvas.width = img.width;
         canvas.height = img.height;
 
-        // Draw pixelated image
+       
         ctx.drawImage(img, 0, 0, width, height);
         ctx.drawImage(canvas, 0, 0, width, height, 0, 0, img.width, img.height);
       };
 
       img.onerror = () => {
         if (url !== defaultImageUrl) {
-          // Retry with default image
+       
           loadImage(defaultImageUrl);
         } else {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -62,7 +62,7 @@ const PixelatedImage = ({ imageUrl, pixelationLevel }) => {
 function News({ personalized, handleShowSidebar }) {
   const { articles, status, filters } = useSelector((state) => state.articles);
 
-  // Pagination state
+ 
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 10;
 
@@ -84,7 +84,6 @@ function News({ personalized, handleShowSidebar }) {
     }
   };
 
-  // State for pixelation level
   const [pixelationLevel, setPixelationLevel] = useState(1);
 
   return (
@@ -97,7 +96,7 @@ function News({ personalized, handleShowSidebar }) {
         padding: 0,
       }}
     >
-      {/* Centered Article List */}
+      
       <Box
         sx={{
           flex: { xs: "1", md: "3" },
@@ -168,7 +167,6 @@ function News({ personalized, handleShowSidebar }) {
               </Card>
             ))}
 
-            {/* Pagination Controls */}
             <Box
               sx={{
                 display: "flex",
@@ -226,7 +224,7 @@ function News({ personalized, handleShowSidebar }) {
         )}
       </Box>
 
-      {/* Right Sidebar - Recommended Titles */}
+      
       <Box
         sx={{
           flex: { xs: "1", md: "1" },

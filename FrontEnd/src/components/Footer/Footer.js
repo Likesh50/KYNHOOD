@@ -5,8 +5,8 @@ const Footer = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "#f5f5fa", // Light purple/white
-        color: "#4a148c", // Subtle purple for text
+        backgroundColor: "#f5f5fa",
+        color: "#4a148c", 
         py: 6,
         mt: 4,
         borderTop: "1px solid #e0e0e0",
