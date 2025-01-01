@@ -1,15 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mysql = require('mysql2');
-const { google } = require('googleapis');
-const axios = require('axios');
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const mysql = require("mysql2");
+const { google } = require("googleapis");
+const axios = require("axios");
 const app = express();
 const PORT = 5000;
-const bcrypt = require('bcryptjs');
-const puppeteer = require('puppeteer');
-const nodemailer = require('nodemailer');
-const cron = require('node-cron');
+const bcrypt = require("bcryptjs");
+const puppeteer = require("puppeteer");
+const nodemailer = require("nodemailer");
+const cron = require("node-cron");
 
 // Middleware
 app.use(cors());
@@ -17,41 +17,41 @@ app.use(bodyParser.json());
 
 // MySQL Database Connection
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'pass123',
-  database: 'kynhood',
+  host: "localhost",
+  user: "root",
+  password: "pass123",
+  database: "kynhood",
 });
 
 // Connect to the database
 db.connect((err) => {
   if (err) {
-    console.error('Error connecting to the database:', err);
+    console.error("Error connecting to the database:", err);
   } else {
-    console.log('Connected to MySQL database');
+    console.log("Connected to MySQL database");
   }
 });
 
-const GEMINI_API_KEY = 'AIzaSyAdFW-tfACDH3xlRiB2TFir0RZpm9-RxCc';  // Replace with your Gemini API Key
-const GEMINI_API_URL = 'https://gemini.googleapis.com/v1beta1/summarizeText';
-const API_KEY = 'AIzaSyA82SaGxS6_wXEffifV_QSopjWrk0EPJlA';
+const GEMINI_API_KEY = "AIzaSyAdFW-tfACDH3xlRiB2TFir0RZpm9-RxCc"; // Replace with your Gemini API Key
+const GEMINI_API_URL = "https://gemini.googleapis.com/v1beta1/summarizeText";
+const API_KEY = "AIzaSyA82SaGxS6_wXEffifV_QSopjWrk0EPJlA";
 // Function to fetch captions using Google APIs
 async function getVideoCaptions(videoId) {
   try {
     const youtube = google.youtube({
-      version: 'v3',
+      version: "v3",
       auth: API_KEY,
     });
 
     // Fetch captions
     const captionsResponse = await youtube.captions.list({
-      part: 'snippet',
+      part: "snippet",
       videoId: videoId,
     });
 
     const captions = captionsResponse.data.items;
     if (!captions || captions.length === 0) {
-      throw new Error('No captions available for this video.');
+      throw new Error("No captions available for this video.");
     }
 
     // Select the first caption (assuming it's in a supported language)
@@ -64,7 +64,7 @@ async function getVideoCaptions(videoId) {
 
     return captionDetails.data;
   } catch (error) {
-    console.error('Error fetching captions:', error.message);
+    console.error("Error fetching captions:", error.message);
     return null;
   }
 }
@@ -79,50 +79,65 @@ async function summarizeTextWithGemini(text) {
 
     return response.data.summary; // Assuming Gemini API returns a 'summary' field
   } catch (error) {
-    console.error('Error summarizing text with Gemini API:', error.message);
+    console.error("Error summarizing text with Gemini API:", error.message);
     return null;
   }
 }
 
 // Extract video ID from YouTube URL
 function getVideoId(url) {
-  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const match = url.match(
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
   return match ? match[1] : null;
 }
 
 // Endpoint to handle video transcript and summarization
-app.post('/api/getVideoSummary', async (req, res) => {
+app.post("/api/getVideoSummary", async (req, res) => {
   const { videoUrl } = req.body;
 
   // Extract video ID from URL
   const videoId = getVideoId(videoUrl);
   if (!videoId) {
-    return res.status(400).send({ error: 'Invalid YouTube URL' });
+    return res.status(400).send({ error: "Invalid YouTube URL" });
   }
 
   // Step 1: Fetch captions
   let captionsText = await getVideoCaptions(videoId);
   if (!captionsText) {
-    return res.status(500).send({ error: 'Could not fetch captions for the video' });
+    return res
+      .status(500)
+      .send({ error: "Could not fetch captions for the video" });
   }
 
   // Step 2: Summarize the captions using Gemini API
   const summary = await summarizeTextWithGemini(captionsText);
   if (!summary) {
-    return res.status(500).send({ error: 'Could not generate summary using Gemini API' });
+    return res
+      .status(500)
+      .send({ error: "Could not generate summary using Gemini API" });
   }
 
   // Send the summarized result
   res.send({ summary });
 });
 
-app.post('/register', (req, res) => {
-  const { name, email, password, mobile, preferredCategories, languagePreference, dateOfBirth, district } = req.body;
+app.post("/register", (req, res) => {
+  const {
+    name,
+    email,
+    password,
+    mobile,
+    preferredCategories,
+    languagePreference,
+    dateOfBirth,
+    district,
+  } = req.body;
 
   // Hash the password using bcrypt
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
-      return res.status(500).json({ message: 'Error hashing password' });
+      return res.status(500).json({ message: "Error hashing password" });
     }
 
     // Prepare data to be inserted into the database
@@ -135,52 +150,73 @@ app.post('/register', (req, res) => {
     const categoriesJson = JSON.stringify(preferredCategories);
 
     // Execute the query to insert data into the users table
-    db.query(query, [name, email, hashedPassword, mobile, categoriesJson, languagePreference, dateOfBirth, district], (err, result) => {
-      if (err) {
-        console.error('Error inserting data:', err);
-        return res.status(500).json({ message: 'Error registering user' });
-      }
+    db.query(
+      query,
+      [
+        name,
+        email,
+        hashedPassword,
+        mobile,
+        categoriesJson,
+        languagePreference,
+        dateOfBirth,
+        district,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error("Error inserting data:", err);
+          return res.status(500).json({ message: "Error registering user" });
+        }
 
-      // Respond with success message
-      res.status(201).json({ message: 'User registered successfully' });
-    });
+        // Respond with success message
+        res.status(201).json({ message: "User registered successfully" });
+      }
+    );
   });
 });
-app.post('/login', (req, res) => {
+app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
   // Validate if both email and password are provided
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   // Query to find the user by email
-  const query = 'SELECT * FROM users WHERE email = ?';
+  const query = "SELECT * FROM users WHERE email = ?";
 
   db.query(query, [email], (err, results) => {
     if (err) {
-      console.error('Error querying database:', err);
-      return res.status(500).json({ message: 'Internal server error' });
+      console.error("Error querying database:", err);
+      return res.status(500).json({ message: "Internal server error" });
     }
 
     // Check if the user with the given email exists
     if (results.length === 0) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     // Compare the provided password with the stored hashed password
     const user = results[0];
     bcrypt.compare(password, user.password, (err, isMatch) => {
       if (err) {
-        console.error('Error comparing passwords:', err);
-        return res.status(500).json({ message: 'Internal server error' });
+        console.error("Error comparing passwords:", err);
+        return res.status(500).json({ message: "Internal server error" });
       }
 
       // If passwords match, send a success response
       if (isMatch) {
-        res.status(200).json({ message: 'Login successful', userId: user.id,preference:user.preferred_categories,languages:user.language_preference,district:user.district});
+        res
+          .status(200)
+          .json({
+            message: "Login successful",
+            userId: user.id,
+            preference: user.preferred_categories,
+            languages: user.language_preference,
+            district: user.district,
+          });
       } else {
-        res.status(400).json({ message: 'Invalid email or password' });
+        res.status(400).json({ message: "Invalid email or password" });
       }
     });
   });
@@ -188,45 +224,49 @@ app.post('/login', (req, res) => {
 
 const getImageUrl = async (url) => {
   try {
-    const response = await axios.get(`http://localhost:5000/resolve-image-url?url=${url}`);
+    const response = await axios.get(
+      `http://localhost:5000/resolve-image-url?url=${url}`
+    );
     return response.data.imageUrl; // Get the actual image URL after redirect
   } catch (error) {
-    console.error('Error fetching the image URL:', error);
+    console.error("Error fetching the image URL:", error);
     return null;
   }
 };
 
-app.get('/scrape3', async (req, res) => {
+app.get("/scrape3", async (req, res) => {
   try {
     console.log("testing 123");
-    
+
     const searchQuery = req.query.q; // Get the search query from the request
     if (!searchQuery) {
-      return res.status(400).send('Search query is required.');
+      return res.status(400).send("Search query is required.");
     }
 
-    const url = `https://news.google.com/search?q=${encodeURIComponent(searchQuery)}`; // Construct the URL with the search query
+    const url = `https://news.google.com/search?q=${encodeURIComponent(
+      searchQuery
+    )}`; // Construct the URL with the search query
     const browser = await puppeteer.launch({ headless: true }); // Launch Puppeteer in headless mode
     const page = await browser.newPage();
 
     // Go to the target URL
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: "networkidle2" });
 
     // Scrape the required data
     const elements = await page.evaluate(() => {
-      const articleElements = document.querySelectorAll('article');
+      const articleElements = document.querySelectorAll("article");
       return Array.from(articleElements).map((article) => {
-        const imageElement = article.querySelector('.K0q4G img');
+        const imageElement = article.querySelector(".K0q4G img");
         const imageUrl = imageElement ? imageElement.src : null;
 
-        const linkElement = article.querySelector('.JtKRv');
+        const linkElement = article.querySelector(".JtKRv");
         const link = linkElement ? linkElement.href : null;
         const text = linkElement ? linkElement.textContent : null;
 
-        const timeElement = article.querySelector('.hvbAAd');
+        const timeElement = article.querySelector(".hvbAAd");
         const time = timeElement ? timeElement.textContent : null;
 
-        const sourceElement = article.querySelector('.a7P8l .vr1PYe');
+        const sourceElement = article.querySelector(".a7P8l .vr1PYe");
         const source = sourceElement ? sourceElement.textContent : null;
 
         return {
@@ -253,20 +293,20 @@ app.get('/scrape3', async (req, res) => {
     res.json({ articles: articlesWithImages });
     console.log(articlesWithImages);
   } catch (error) {
-    console.error('Error scraping:', error);
-    res.status(500).send('Error scraping the website.');
+    console.error("Error scraping:", error);
+    res.status(500).send("Error scraping the website.");
   }
 });
 
-app.get('/resolve-image-url', async (req, res) => {
+app.get("/resolve-image-url", async (req, res) => {
   const { url } = req.query;
   try {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: "networkidle2" });
 
     const finalImageUrl = await page.evaluate(() => {
-      const imgElement = document.querySelector('img'); // Assuming the first image needs to be fetched
+      const imgElement = document.querySelector("img"); // Assuming the first image needs to be fetched
       return imgElement ? imgElement.src : null;
     });
 
@@ -275,73 +315,78 @@ app.get('/resolve-image-url', async (req, res) => {
     if (finalImageUrl) {
       res.json({ imageUrl: finalImageUrl });
     } else {
-      res.status(404).json({ error: 'Image not found' });
+      res.status(404).json({ error: "Image not found" });
     }
   } catch (error) {
-    console.error('Error resolving image URL:', error);
-    res.status(500).send('Error resolving image URL');
+    console.error("Error resolving image URL:", error);
+    res.status(500).send("Error resolving image URL");
   }
 });
 
-
-
-app.get('/scrapeforMail', async (req, res) => {
+app.get("/scrapeforMail", async (req, res) => {
   const browser = await puppeteer.launch({ headless: true });
   try {
     const userId = req.query.userId;
-    if (!userId) return res.status(400).send('User ID is required.');
+    if (!userId) return res.status(400).send("User ID is required.");
 
     // Query to fetch user preferences
-    const query = 'SELECT * FROM users WHERE id = ?';
+    const query = "SELECT * FROM users WHERE id = ?";
     db.query(query, [userId], async (err, results) => {
       if (err) {
-        console.error('Error querying database:', err);
+        console.error("Error querying database:", err);
         await browser.close();
-        return res.status(500).send('Internal server error.');
+        return res.status(500).send("Internal server error.");
       }
 
       if (results.length === 0) {
         await browser.close();
-        return res.status(404).send('User not found.');
+        return res.status(404).send("User not found.");
       }
 
       const user = results[0];
-      const { preferred_categories,district} = user;
+      const { preferred_categories, district } = user;
       const categories = JSON.parse(preferred_categories);
-      const searchQuery = categories[Math.floor(Math.random() * categories.length)]+" "+district;
+      const searchQuery =
+        categories[Math.floor(Math.random() * categories.length)] +
+        " " +
+        district;
 
-      console.log('Search Query:', searchQuery);
+      console.log("Search Query:", searchQuery);
 
       try {
-        const url = `https://news.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+        const url = `https://news.google.com/search?q=${encodeURIComponent(
+          searchQuery
+        )}`;
         const page = await browser.newPage();
-        await page.goto(url, { waitUntil: 'networkidle2' });
+        await page.goto(url, { waitUntil: "networkidle2" });
 
         // Scrape the required data
         const elements = await page.evaluate(() => {
-          const articleElements = document.querySelectorAll('article');
-          return Array.from(articleElements).map((article) => {
-            const imageElement = article.querySelector('.K0q4G img');
-            const imageUrl = imageElement ? imageElement.src : null;
+          const articleElements = document.querySelectorAll("article");
+          return Array.from(articleElements)
+            .map((article) => {
+              const imageElement = article.querySelector(".K0q4G img");
+              const imageUrl = imageElement ? imageElement.src : null;
 
-            const linkElement = article.querySelector('.JtKRv');
-            const link = linkElement ? linkElement.href : null;
-            const text = linkElement ? linkElement.textContent : null;
+              const linkElement = article.querySelector(".JtKRv");
+              const link = linkElement ? linkElement.href : null;
+              const text = linkElement ? linkElement.textContent : null;
 
-            const timeElement = article.querySelector('.hvbAAd');
-            const time = timeElement ? timeElement.textContent : null;
+              const timeElement = article.querySelector(".hvbAAd");
+              const time = timeElement ? timeElement.textContent : null;
 
-            const sourceElement = article.querySelector('.a7P8l .vr1PYe');
-            const source = sourceElement ? sourceElement.textContent : null;
+              const sourceElement = article.querySelector(".a7P8l .vr1PYe");
+              const source = sourceElement ? sourceElement.textContent : null;
 
-            return {
-              title: text,
-              url: link,
-              imgSrc: imageUrl,
-              publishedAt: time,
-              source,
-            };
-          }).filter(article => article.title && article.url); // Filter valid articles
+              return {
+                title: text,
+                url: link,
+                imgSrc: imageUrl,
+                publishedAt: time,
+                source,
+              };
+            })
+            .filter((article) => article.title && article.url); // Filter valid articles
         });
 
         // Limit to the first 5 articles
@@ -354,20 +399,19 @@ app.get('/scrapeforMail', async (req, res) => {
 
         // Return the scraped articles as JSON
         res.json({ articles: articlesWithImages });
-        console.log('Scraped Articles:', articlesWithImages);
+        console.log("Scraped Articles:", articlesWithImages);
       } catch (scrapingError) {
-        console.error('Error during scraping:', scrapingError);
-        res.status(500).send('Error scraping the website.');
+        console.error("Error during scraping:", scrapingError);
+        res.status(500).send("Error scraping the website.");
       } finally {
         await browser.close(); // Ensure browser is closed after scraping
       }
     });
   } catch (error) {
-    console.error('Unexpected error:', error);
-    res.status(500).send('Unexpected server error.');
+    console.error("Unexpected error:", error);
+    res.status(500).send("Unexpected server error.");
   }
 });
-
 
 // Fetch Latest News Article
 async function fetchNewsArticles(userId) {
@@ -385,7 +429,6 @@ async function fetchNewsArticles(userId) {
   }
 }
 
-
 // Generate Email Template
 function generateEmailTemplate(articles) {
   const defaultImage = "https://via.placeholder.com/600x300";
@@ -396,10 +439,13 @@ function generateEmailTemplate(articles) {
       </div>
   `;
 
-  const articleTemplates = articles.map((article) => {
+  const articleTemplates = articles
+    .map((article) => {
       const articleTitle = article.title || "No Title Available";
-      const articleImage = article.imgSrc || defaultImage; 
-      const articleContent = article.publishedAt ? article.publishedAt : "Published date unavailable.";
+      const articleImage = article.imgSrc || defaultImage;
+      const articleContent = article.publishedAt
+        ? article.publishedAt
+        : "Published date unavailable.";
       const articleUrl = article.url || "#";
 
       return `
@@ -409,7 +455,8 @@ function generateEmailTemplate(articles) {
           <p class="article-content">Published on: ${articleContent}</p>
           <a href="${articleUrl}" class="read-more">Read Full Article</a>
       </div>`;
-  }).join(""); // Combine all article templates into a single string
+    })
+    .join(""); // Combine all article templates into a single string
 
   return `
 <!DOCTYPE html>
@@ -529,44 +576,48 @@ function generateEmailTemplate(articles) {
 // Send Email
 async function sendEmail(recipient, subject, htmlContent) {
   const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'rohitvijayandrive@gmail.com',
-        pass: 'kfzxznsmouxvszel'  
-      }
+    service: "gmail",
+    auth: {
+      user: "rohitvijayandrive@gmail.com",
+      pass: "kfzxznsmouxvszel",
+    },
   });
 
   const mailOptions = {
-      from: 'கணினி_X\' "செய்தி360" <like22050.it@rmkec.ac.in>',
-      to: 'rohitvijayan1111@gmail.com',
-      subject: subject,
-      html: htmlContent,
+    from: 'கணினி_X\' "செய்தி360" <like22050.it@rmkec.ac.in>',
+    to: "rohitvijayan1111@gmail.com",
+    subject: subject,
+    html: htmlContent,
   };
   console.log(mailOptions);
   try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log('Email sent:', info.response);
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
   } catch (error) {
-      console.error('Error sending email:', error);
-      // Log additional error details
-      if (error.response) {
-          console.error('Error response:', error.response);
-      }
+    console.error("Error sending email:", error);
+    // Log additional error details
+    if (error.response) {
+      console.error("Error response:", error.response);
+    }
   }
 }
 
 // Main Workflow
-cron.schedule('*/3 * * * *', async () => {
-  console.log('Running Cron Job - Sending Daily News Email');
+cron.schedule("*/6 * * * *", async () => {
+  console.log("Running Cron Job - Sending Daily News Email");
 
   try {
-      const latestArticles = await fetchNewsArticles(1);
-      const emailContent = generateEmailTemplate(latestArticles);
-      //console.log(emailContent);
-      await sendEmail('recipient@example.com', 'Your Daily News Update', emailContent);
-      console.log('Email sent successfully');
+    const latestArticles = await fetchNewsArticles(1);
+    const emailContent = generateEmailTemplate(latestArticles);
+    //console.log(emailContent);
+    await sendEmail(
+      "rithikraja28.rr@gmail.com",
+      "Your Daily News Update",
+      emailContent
+    );
+    console.log("Email sent successfully");
   } catch (error) {
-      console.error('Error in cron job workflow:', error);
+    console.error("Error in cron job workflow:", error);
   }
 });
 
