@@ -21,6 +21,8 @@ Seithi360 is a comprehensive news aggregator application designed to enhance com
    ![WhatsApp Image 2025-01-01 at 09 27 40_ca0e3432](https://github.com/user-attachments/assets/4696020e-1ef0-4255-81a3-2e3c90593862)
 
 - **Multi-language Support**: News articles are delivered in the user’s preferred language.
+  ![image](https://github.com/user-attachments/assets/c9895896-6612-4665-a5e8-63059f6fce77)
+
 - **Accurate and Relevant**: Ensures information accuracy by sourcing from trusted sources and implementing content filtering.
 
 ---
@@ -30,7 +32,6 @@ Seithi360 is a comprehensive news aggregator application designed to enhance com
 Ensure you have the following installed:
 
 - [Node.js](https://nodejs.org/) (v16 or later)
-- MySQL Database
 - A modern web browser
 
 ---
@@ -43,17 +44,13 @@ Ensure you have the following installed:
    ```bash
    cd backend
    ```
-2. Update the MySQL server password in the configuration file (e.g., `config.js` or `.env`):
-   ```plaintext
-   DB_PASSWORD=<your_mysql_server_password>
-   ```
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
-4. Start the backend server:
+3. Start the backend server:
    ```bash
-   npm start
+  node server.js
    ```
 
 ### Frontend 🌐
@@ -113,38 +110,6 @@ seithi360/
 ├── README.md       # Project documentation
 ```
 
----
-
-## Add Webpage Image 🖼
-
-To showcase the webpage design of Seithi360, you can add an image here:
-
-![Seithi360 Webpage](path/to/your/image.png)
-
-> Replace `path/to/your/image.png` with the relative path to your image file.
-
----
-
-## Contributing 🌈
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new feature branch:
-   ```bash
-   git checkout -b feature-name
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add feature-name"
-   ```
-4. Push to your branch:
-   ```bash
-   git push origin feature-name
-   ```
-5. Open a pull request.
-
----
 
 ## License 🔒
 
