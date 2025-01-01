@@ -25,34 +25,32 @@ import "react-datepicker/dist/react-datepicker.css";
 
 function NavBar() {
   const dispatch = useDispatch();
-  // Get the current location object
   const location = useLocation();
-
-  // Extract the pathname from the location object
   const currentPath = location.pathname;
-
-  console.log(currentPath);
   const isPagePersonalized = /\/personalized/.test(currentPath);
 
   const [searchInputValue, setSearchInputValue] = useState("");
-
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState(sources[0]);
   const [startDate, setStartDate] = useState(
     moment(new Date()).format("YYYY-MM-DD")
   );
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-
   const isSearchButtonDisabled = searchInputValue.trim() === "";
-  console.log(selected);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(setQuery(searchInputValue));
-    dispatch(fetchArticles({ query: searchInputValue, source: selected.key, date: startDate }));
+    dispatch(
+      fetchArticles({
+        query: searchInputValue,
+        source: selected.key,
+        date: startDate,
+      })
+    );
     setSearchInputValue("");
   };
 
-  // Handle the selection of a new source
   const handleSelectSource = (eventKey) => {
     const selectedSource = sources.find((source) => source.key === eventKey);
     setSelected(selectedSource);
@@ -85,30 +83,29 @@ function NavBar() {
         date: startDate,
       })
     );
-    dispatch(setQuery(''));
+    dispatch(setQuery(""));
     // eslint-disable-next-line
   }, [dispatch, selected, selectedCategory]);
 
   return (
     <Navbar
-      className="navbar"
-      variant="dark"
+      className="modern-navbar"
+      variant="light"
       expand="lg"
       fixed="top"
       expanded={!isCollapsed}
     >
       <Navbar.Brand className="nav-brand" href="/">
-        <img
-          src={
-            "https://seeklogo.com/images/S/svg-logo-A7D0801A11-seeklogo.com.png"
-          }
+       {/*  <img
+          src="https://seeklogo.com/images/S/svg-logo-A7D0801A11-seeklogo.com.png"
           alt="Logo"
           className="logo"
-        />
+        /> */}
+        <span>செய்தி360</span>
       </Navbar.Brand>
       {isCollapsed && (
         <Navbar.Toggle
-          className="border-0"
+          className="border-0 toggle-btn"
           aria-controls="basic-navbar-nav"
           onClick={() => setIsCollapsed(!isCollapsed)}
         />
@@ -116,76 +113,80 @@ function NavBar() {
 
       {!isCollapsed && (
         <IoCloseOutline
-          size={40}
+          size={30}
           className="close-btn"
           onClick={() => setIsCollapsed(!isCollapsed)}
         />
       )}
-      {isPagePersonalized ? (
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/">
-              Home
-            </Nav.Link>
-            <Nav.Link as={Link} to="/personalized" className="active">
-              Personalized News
-            </Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      ) : (
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/" className="active">
-              Home
-            </Nav.Link>
-            <Nav.Link as={Link} to="/personalized">
-              Personalized
-            </Nav.Link>
-            <NavDropdown
-              id="dropdown-basic-button"
-              title={capitaLize(selectedCategory)} // Display the selected source's name
-              onSelect={handleSelectCategory} // Handle the selection event
-            >
-              {categories.map((element, index) => (
-                <NavDropdown.Item key={index} eventKey={element}>
-                  {capitaLize(element)}
-                </NavDropdown.Item>
-              ))}
-            </NavDropdown>
 
-            <NavDropdown
-              id="dropdown-basic-button"
-              title={selected.name} // Display the selected source's name
-              onSelect={handleSelectSource} // Handle the selection event
-            >
-              {sources.map((element, index) => (
-                <NavDropdown.Item key={index} eventKey={element.key}>
-                  {element.name}
-                </NavDropdown.Item>
-              ))}
-            </NavDropdown>
-          </Nav>
-          <div className="date-picker">
-            <DatePicker selected={startDate} onChange={handleDateChange} />
-          </div>
-          <Form className="search-form" onSubmit={handleSubmit}>
-            <FormControl
-              type="text"
-              value={searchInputValue}
-              onChange={(e) => setSearchInputValue(e.target.value)}
-              placeholder="Explore news..."
-              className="form-input color-white form-control-lg mt-lg-2 mt-md-2 mt-sm-2 mt-xl-0"
-            />
-            <Button
-              onClick={handleSubmit}
-              className="search-btn mt-lg-2 ml-2 mt-md-2 mt-sm-2 mt-xl-0"
-              disabled={isSearchButtonDisabled}
-            >
-              Search
-            </Button>
-          </Form>
-        </Navbar.Collapse>
-      )}
+      <Navbar.Collapse id="basic-navbar-nav">
+        <Nav className="me-auto">
+          <Nav.Link
+            as={Link}
+            to="/"
+            className={isPagePersonalized ? "" : "active"}
+          >
+            Home
+          </Nav.Link>
+          <Nav.Link
+            as={Link}
+            to="/personalized"
+            className={isPagePersonalized ? "active" : ""}
+          >
+            Personalized
+          </Nav.Link>
+
+          <NavDropdown
+            id="category-dropdown"
+            title={capitaLize(selectedCategory)}
+            onSelect={handleSelectCategory}
+          >
+            {categories.map((element, index) => (
+              <NavDropdown.Item key={index} eventKey={element}>
+                {capitaLize(element)}
+              </NavDropdown.Item>
+            ))}
+          </NavDropdown>
+
+          <NavDropdown
+            id="source-dropdown"
+            title={selected.name}
+            onSelect={handleSelectSource}
+          >
+            {sources.map((element, index) => (
+              <NavDropdown.Item key={index} eventKey={element.key}>
+                {element.name}
+              </NavDropdown.Item>
+            ))}
+          </NavDropdown>
+        </Nav>
+
+        <div className="date-picker-container">
+          <DatePicker
+            selected={startDate}
+            onChange={handleDateChange}
+            dateFormat="MMMM d, yyyy"
+            className="date-picker-input"
+          />
+        </div>
+
+        <Form className="search-form" onSubmit={handleSubmit}>
+          <FormControl
+            type="text"
+            value={searchInputValue}
+            onChange={(e) => setSearchInputValue(e.target.value)}
+            placeholder="Search news..."
+            className="form-input"
+          />
+          <Button
+            onClick={handleSubmit}
+            className="search-btn"
+            disabled={isSearchButtonDisabled}
+          >
+            Search
+          </Button>
+        </Form>
+      </Navbar.Collapse>
     </Navbar>
   );
 }

@@ -31,6 +31,24 @@ const normalizeArticles = (articles, source) => {
     imgSrc: article?.urlToImage || article.image || newsImage,
   }));
 };
+export const fetchScrapedArticles = async (query) => {
+  if (!query) {
+    query="Trending News";
+  }
+  console.log(query+"INSJALDAS");
+  const url = `http://localhost:5000/scrape3`; 
+  try {
+    const response = await axios.get(url, {
+      params: { q: query },
+    });
+
+    // Return the scraped articles
+    return response.data.articles || [];
+  } catch (error) {
+    console.error('Error fetching scraped articles:', error);
+    return [];
+  }
+};
 
 // Fetch NewsAPI articles
 export const fetchNewsAPIArticles = async (query, filters) => {
@@ -85,7 +103,6 @@ export const fetchGnewsArticles = async (query, filters) => {
     from: filters.date,
     category: filters.category || 'general',
     apikey: GNEWS_APY_KEY,
-    
   };
 
   const data = await makeApiRequest(url, params);
