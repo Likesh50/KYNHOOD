@@ -23,7 +23,7 @@ const db = mysql.createConnection({
   database: "kynhood",
 });
 
-// Connect to the database
+
 db.connect((err) => {
   if (err) {
     console.error("Error connecting to the database:", err);
@@ -32,10 +32,10 @@ db.connect((err) => {
   }
 });
 
-const GEMINI_API_KEY = "AIzaSyAdFW-tfACDH3xlRiB2TFir0RZpm9-RxCc"; // Replace with your Gemini API Key
+const GEMINI_API_KEY = "AIzaSyAdFW-tfACDH3xlRiB2TFir0RZpm9-RxCc"; 
 const GEMINI_API_URL = "https://gemini.googleapis.com/v1beta1/summarizeText";
 const API_KEY = "AIzaSyA82SaGxS6_wXEffifV_QSopjWrk0EPJlA";
-// Function to fetch captions using Google APIs
+
 async function getVideoCaptions(videoId) {
   try {
     const youtube = google.youtube({
@@ -43,7 +43,7 @@ async function getVideoCaptions(videoId) {
       auth: API_KEY,
     });
 
-    // Fetch captions
+  
     const captionsResponse = await youtube.captions.list({
       part: "snippet",
       videoId: videoId,
@@ -54,10 +54,10 @@ async function getVideoCaptions(videoId) {
       throw new Error("No captions available for this video.");
     }
 
-    // Select the first caption (assuming it's in a supported language)
+   
     const captionId = captions[0].id;
 
-    // Fetch caption text
+ 
     const captionDetails = await youtube.captions.download({
       id: captionId,
     });
@@ -69,7 +69,7 @@ async function getVideoCaptions(videoId) {
   }
 }
 
-// Function to summarize text using Gemini API
+
 async function summarizeTextWithGemini(text) {
   try {
     const response = await axios.post(GEMINI_API_URL, {
@@ -77,14 +77,14 @@ async function summarizeTextWithGemini(text) {
       text: text,
     });
 
-    return response.data.summary; // Assuming Gemini API returns a 'summary' field
+    return response.data.summary; 
   } catch (error) {
     console.error("Error summarizing text with Gemini API:", error.message);
     return null;
   }
 }
 
-// Extract video ID from YouTube URL
+
 function getVideoId(url) {
   const match = url.match(
     /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
@@ -92,17 +92,16 @@ function getVideoId(url) {
   return match ? match[1] : null;
 }
 
-// Endpoint to handle video transcript and summarization
+
 app.post("/api/getVideoSummary", async (req, res) => {
   const { videoUrl } = req.body;
 
-  // Extract video ID from URL
   const videoId = getVideoId(videoUrl);
   if (!videoId) {
     return res.status(400).send({ error: "Invalid YouTube URL" });
   }
 
-  // Step 1: Fetch captions
+
   let captionsText = await getVideoCaptions(videoId);
   if (!captionsText) {
     return res
@@ -110,7 +109,7 @@ app.post("/api/getVideoSummary", async (req, res) => {
       .send({ error: "Could not fetch captions for the video" });
   }
 
-  // Step 2: Summarize the captions using Gemini API
+
   const summary = await summarizeTextWithGemini(captionsText);
   if (!summary) {
     return res
@@ -118,7 +117,7 @@ app.post("/api/getVideoSummary", async (req, res) => {
       .send({ error: "Could not generate summary using Gemini API" });
   }
 
-  // Send the summarized result
+
   res.send({ summary });
 });
 
@@ -134,22 +133,22 @@ app.post("/register", (req, res) => {
     district,
   } = req.body;
 
-  // Hash the password using bcrypt
+
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({ message: "Error hashing password" });
     }
 
-    // Prepare data to be inserted into the database
+   
     const query = `
       INSERT INTO users (name, email, password, mobile, preferred_categories, language_preference, date_of_birth, district)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    // Convert the preferredCategories array into a JSON string for storing
+  
     const categoriesJson = JSON.stringify(preferredCategories);
 
-    // Execute the query to insert data into the users table
+    
     db.query(
       query,
       [
@@ -168,7 +167,7 @@ app.post("/register", (req, res) => {
           return res.status(500).json({ message: "Error registering user" });
         }
 
-        // Respond with success message
+        
         res.status(201).json({ message: "User registered successfully" });
       }
     );
@@ -177,12 +176,11 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  // Validate if both email and password are provided
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
-  // Query to find the user by email
+ 
   const query = "SELECT * FROM users WHERE email = ?";
 
   db.query(query, [email], (err, results) => {
@@ -191,12 +189,12 @@ app.post("/login", (req, res) => {
       return res.status(500).json({ message: "Internal server error" });
     }
 
-    // Check if the user with the given email exists
+    
     if (results.length === 0) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Compare the provided password with the stored hashed password
+
     const user = results[0];
     bcrypt.compare(password, user.password, (err, isMatch) => {
       if (err) {
@@ -204,7 +202,7 @@ app.post("/login", (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
       }
 
-      // If passwords match, send a success response
+     
       if (isMatch) {
         res
           .status(200)
@@ -227,7 +225,7 @@ const getImageUrl = async (url) => {
     const response = await axios.get(
       `http://localhost:5000/resolve-image-url?url=${url}`
     );
-    return response.data.imageUrl; // Get the actual image URL after redirect
+    return response.data.imageUrl; 
   } catch (error) {
     console.error("Error fetching the image URL:", error);
     return null;
@@ -238,7 +236,7 @@ app.get("/scrape3", async (req, res) => {
   try {
     console.log("testing 123");
 
-    const searchQuery = req.query.q; // Get the search query from the request
+    const searchQuery = req.query.q; 
     if (!searchQuery) {
       return res.status(400).send("Search query is required.");
     }
@@ -246,7 +244,7 @@ app.get("/scrape3", async (req, res) => {
     const url = `https://news.google.com/search?q=${encodeURIComponent(
       searchQuery
     )}`; // Construct the URL with the search query
-    const browser = await puppeteer.launch({ headless: true }); // Launch Puppeteer in headless mode
+    const browser = await puppeteer.launch({ headless: true }); 
     const page = await browser.newPage();
 
     // Go to the target URL
@@ -272,7 +270,7 @@ app.get("/scrape3", async (req, res) => {
         return {
           title: text,
           url: link,
-          imgSrc: imageUrl, // Processed later
+          imgSrc: imageUrl, 
           publishedAt: time,
           source,
         };
@@ -281,7 +279,7 @@ app.get("/scrape3", async (req, res) => {
 
     await browser.close();
 
-    // Resolve image URLs
+    
     const articlesWithImages = await Promise.all(
       elements.slice(0, 10).map(async (article) => ({
         ...article,
@@ -289,7 +287,7 @@ app.get("/scrape3", async (req, res) => {
       }))
     );
 
-    // Return the scraped articles as JSON
+    
     res.json({ articles: articlesWithImages });
     console.log(articlesWithImages);
   } catch (error) {
@@ -306,7 +304,7 @@ app.get("/resolve-image-url", async (req, res) => {
     await page.goto(url, { waitUntil: "networkidle2" });
 
     const finalImageUrl = await page.evaluate(() => {
-      const imgElement = document.querySelector("img"); // Assuming the first image needs to be fetched
+      const imgElement = document.querySelector("img"); 
       return imgElement ? imgElement.src : null;
     });
 
@@ -329,7 +327,7 @@ app.get("/scrapeforMail", async (req, res) => {
     const userId = req.query.userId;
     if (!userId) return res.status(400).send("User ID is required.");
 
-    // Query to fetch user preferences
+   
     const query = "SELECT * FROM users WHERE id = ?";
     db.query(query, [userId], async (err, results) => {
       if (err) {
@@ -360,7 +358,7 @@ app.get("/scrapeforMail", async (req, res) => {
         const page = await browser.newPage();
         await page.goto(url, { waitUntil: "networkidle2" });
 
-        // Scrape the required data
+      
         const elements = await page.evaluate(() => {
           const articleElements = document.querySelectorAll("article");
           return Array.from(articleElements)
@@ -386,10 +384,10 @@ app.get("/scrapeforMail", async (req, res) => {
                 source,
               };
             })
-            .filter((article) => article.title && article.url); // Filter valid articles
+            .filter((article) => article.title && article.url); 
         });
 
-        // Limit to the first 5 articles
+      
         const articlesWithImages = await Promise.all(
           elements.slice(0, 2).map(async (article) => ({
             ...article,
@@ -397,14 +395,14 @@ app.get("/scrapeforMail", async (req, res) => {
           }))
         );
 
-        // Return the scraped articles as JSON
+       
         res.json({ articles: articlesWithImages });
         console.log("Scraped Articles:", articlesWithImages);
       } catch (scrapingError) {
         console.error("Error during scraping:", scrapingError);
         res.status(500).send("Error scraping the website.");
       } finally {
-        await browser.close(); // Ensure browser is closed after scraping
+        await browser.close(); 
       }
     });
   } catch (error) {
@@ -413,7 +411,6 @@ app.get("/scrapeforMail", async (req, res) => {
   }
 });
 
-// Fetch Latest News Article
 async function fetchNewsArticles(userId) {
   const API_URL = `http://localhost:5000/scrapeforMail?userId=${userId}`;
   try {
@@ -456,8 +453,7 @@ function generateEmailTemplate(articles) {
           <a href="${articleUrl}" class="read-more">Read Full Article</a>
       </div>`;
     })
-    .join(""); // Combine all article templates into a single string
-
+    .join("");
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -595,7 +591,7 @@ async function sendEmail(recipient, subject, htmlContent) {
     console.log("Email sent:", info.response);
   } catch (error) {
     console.error("Error sending email:", error);
-    // Log additional error details
+  
     if (error.response) {
       console.error("Error response:", error.response);
     }
@@ -609,7 +605,7 @@ cron.schedule("*/6 * * * *", async () => {
   try {
     const latestArticles = await fetchNewsArticles(1);
     const emailContent = generateEmailTemplate(latestArticles);
-    //console.log(emailContent);
+   
     await sendEmail(
       "rithikraja28.rr@gmail.com",
       "Your Daily News Update",
@@ -625,3 +621,4 @@ cron.schedule("*/6 * * * *", async () => {
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
