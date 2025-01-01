@@ -143,7 +143,7 @@ const PersonalizedPage = () => {
                 color: "#6f42c1", // Purple color for the title
                 fontWeight: "bold", // Bold font weight for emphasis
                 letterSpacing: 1, // Slightly increase letter spacing for better readability
-                 // Capitalize first letter of each word
+                // Capitalize first letter of each word
               }}
             >
               Personalized News for you
@@ -237,6 +237,13 @@ const PersonalizedPage = () => {
             style={{ color: "#6f42c1" }}
           >
             Local News
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            align="center"
+            style={{ fontWeight: "bold", marginBottom: "16px" }}
+          >
+            {sessionStorage.getItem("district") || "Unknown District"}
           </Typography>
           <Divider />
           <List>
