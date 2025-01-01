@@ -8,6 +8,8 @@ const app = express();
 const PORT = 5000;
 const bcrypt = require('bcryptjs');
 const puppeteer = require('puppeteer');
+const nodemailer = require('nodemailer');
+const cron = require('node-cron');
 
 // Middleware
 app.use(cors());
@@ -277,6 +279,293 @@ app.get('/resolve-image-url', async (req, res) => {
   } catch (error) {
     console.error('Error resolving image URL:', error);
     res.status(500).send('Error resolving image URL');
+  }
+});
+
+
+
+app.get('/scrapeforMail', async (req, res) => {
+  const browser = await puppeteer.launch({ headless: true });
+  try {
+    const userId = req.query.userId;
+    if (!userId) return res.status(400).send('User ID is required.');
+
+    // Query to fetch user preferences
+    const query = 'SELECT * FROM users WHERE id = ?';
+    db.query(query, [userId], async (err, results) => {
+      if (err) {
+        console.error('Error querying database:', err);
+        await browser.close();
+        return res.status(500).send('Internal server error.');
+      }
+
+      if (results.length === 0) {
+        await browser.close();
+        return res.status(404).send('User not found.');
+      }
+
+      const user = results[0];
+      const { preferred_categories,district} = user;
+      const categories = JSON.parse(preferred_categories);
+      const searchQuery = categories[Math.floor(Math.random() * categories.length)]+" "+district;
+
+      console.log('Search Query:', searchQuery);
+
+      try {
+        const url = `https://news.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle2' });
+
+        // Scrape the required data
+        const elements = await page.evaluate(() => {
+          const articleElements = document.querySelectorAll('article');
+          return Array.from(articleElements).map((article) => {
+            const imageElement = article.querySelector('.K0q4G img');
+            const imageUrl = imageElement ? imageElement.src : null;
+
+            const linkElement = article.querySelector('.JtKRv');
+            const link = linkElement ? linkElement.href : null;
+            const text = linkElement ? linkElement.textContent : null;
+
+            const timeElement = article.querySelector('.hvbAAd');
+            const time = timeElement ? timeElement.textContent : null;
+
+            const sourceElement = article.querySelector('.a7P8l .vr1PYe');
+            const source = sourceElement ? sourceElement.textContent : null;
+
+            return {
+              title: text,
+              url: link,
+              imgSrc: imageUrl,
+              publishedAt: time,
+              source,
+            };
+          }).filter(article => article.title && article.url); // Filter valid articles
+        });
+
+        // Limit to the first 5 articles
+        const articlesWithImages = await Promise.all(
+          elements.slice(0, 2).map(async (article) => ({
+            ...article,
+            imgSrc: article.imgSrc ? await getImageUrl(article.imgSrc) : null,
+          }))
+        );
+
+        // Return the scraped articles as JSON
+        res.json({ articles: articlesWithImages });
+        console.log('Scraped Articles:', articlesWithImages);
+      } catch (scrapingError) {
+        console.error('Error during scraping:', scrapingError);
+        res.status(500).send('Error scraping the website.');
+      } finally {
+        await browser.close(); // Ensure browser is closed after scraping
+      }
+    });
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    res.status(500).send('Unexpected server error.');
+  }
+});
+
+
+// Fetch Latest News Article
+async function fetchNewsArticles(userId) {
+  const API_URL = `http://localhost:5000/scrapeforMail?userId=${userId}`;
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch news articles: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.articles || [];
+  } catch (error) {
+    console.error("Error fetching articles:", error.message);
+    return [];
+  }
+}
+
+
+// Generate Email Template
+function generateEmailTemplate(articles) {
+  const defaultImage = "https://via.placeholder.com/600x300";
+  const newsletterHeader = `
+      <div class="header">
+          <h1>Today's Top Stories</h1>
+          <p>Your curated news from கணினி_X' செய்தி360</p>
+      </div>
+  `;
+
+  const articleTemplates = articles.map((article) => {
+      const articleTitle = article.title || "No Title Available";
+      const articleImage = article.imgSrc || defaultImage; 
+      const articleContent = article.publishedAt ? article.publishedAt : "Published date unavailable.";
+      const articleUrl = article.url || "#";
+
+      return `
+      <div class="article-container">
+          <h2 class="article-title">${articleTitle}</h2>
+          <img src="${articleImage}" alt="Article Image" class="article-image">
+          <p class="article-content">Published on: ${articleContent}</p>
+          <a href="${articleUrl}" class="read-more">Read Full Article</a>
+      </div>`;
+  }).join(""); // Combine all article templates into a single string
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily News Update</title>
+  <style>
+      body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          background-color: #f9f9f9;
+          line-height: 1.6;
+          color: #333333;
+      }
+      .email-container {
+          max-width: 600px;
+          margin: 20px auto;
+          background-color: #ffffff;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+          background: linear-gradient(90deg, #6a11cb, #2575fc);
+          color: #ffffff;
+          padding: 30px 20px;
+          text-align: center;
+      }
+      .header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: bold;
+          letter-spacing: 0.5px;
+      }
+      .header p {
+          margin: 5px 0 0;
+          font-size: 16px;
+          opacity: 0.9;
+      }
+      .article-container {
+          padding: 20px;
+          border-bottom: 1px solid #eeeeee;
+      }
+      .article-title {
+          font-size: 22px;
+          margin-bottom: 15px;
+          font-weight: 600;
+          color: #2c3e50;
+      }
+      .article-image {
+          width: 100%;
+          max-height: 300px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 15px;
+      }
+      .article-content {
+          font-size: 16px;
+          color: #666666;
+          margin-bottom: 20px;
+          line-height: 1.8;
+      }
+      .read-more {
+          display: block;
+          width: fit-content;
+          margin: 0 auto;
+          background: linear-gradient(90deg, #6a11cb, #2575fc);
+          color: #ffffff;
+          text-decoration: none;
+          padding: 12px 24px;
+          border-radius: 25px;
+          font-size: 16px;
+          font-weight: bold;
+          transition: background 0.3s ease;
+      }
+      .read-more:hover {
+          background: linear-gradient(90deg, #2575fc, #6a11cb);
+      }
+      .footer {
+          background-color: #f9f9f9;
+          text-align: center;
+          padding: 20px;
+          font-size: 14px;
+          color: #888888;
+          border-top: 1px solid #eeeeee;
+      }
+      .footer a {
+          color: #6a11cb;
+          text-decoration: none;
+      }
+      .footer a:hover {
+          text-decoration: underline;
+      }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+      <!-- Header Section -->
+      ${newsletterHeader}
+      
+      <!-- Articles Section -->
+      ${articleTemplates}
+      
+      <!-- Footer Section -->
+      <div class="footer">
+          <p>You're receiving this email because you subscribed to our கணினி_X newsletter.</p>
+          <p><a href="{{UNSUBSCRIBE_URL}}">Unsubscribe</a> | <a href="{{SETTINGS_URL}}">Manage Preferences</a></p>
+      </div>
+  </div>
+</body>
+</html>`;
+}
+
+// Send Email
+async function sendEmail(recipient, subject, htmlContent) {
+  const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'rohitvijayandrive@gmail.com',
+        pass: 'kfzxznsmouxvszel'  
+      }
+  });
+
+  const mailOptions = {
+      from: 'கணினி_X\' "செய்தி360" <like22050.it@rmkec.ac.in>',
+      to: 'rohitvijayan1111@gmail.com',
+      subject: subject,
+      html: htmlContent,
+  };
+  console.log(mailOptions);
+  try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Email sent:', info.response);
+  } catch (error) {
+      console.error('Error sending email:', error);
+      // Log additional error details
+      if (error.response) {
+          console.error('Error response:', error.response);
+      }
+  }
+}
+
+// Main Workflow
+cron.schedule('*/3 * * * *', async () => {
+  console.log('Running Cron Job - Sending Daily News Email');
+
+  try {
+      const latestArticles = await fetchNewsArticles(1);
+      const emailContent = generateEmailTemplate(latestArticles);
+      //console.log(emailContent);
+      await sendEmail('recipient@example.com', 'Your Daily News Update', emailContent);
+      console.log('Email sent successfully');
+  } catch (error) {
+      console.error('Error in cron job workflow:', error);
   }
 });
 

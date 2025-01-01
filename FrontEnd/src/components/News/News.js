@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import "./News.css";
 
-// Pixelation Component
 const PixelatedImage = ({ imageUrl, pixelationLevel }) => {
   const canvasRef = useRef(null);
   const defaultImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpTn-gQXtrxGboqKJJdn24Pt_r0viSEJW32Q&s"; // URL of the default image
